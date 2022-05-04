@@ -28,27 +28,49 @@ def tworzenie_tablicy(n):
 def zapisz_obraz(tab, img, nr_obrazu):
     for i in range(len(tab)):
         for j in range(len(tab)):
-            contours = np.array([[(i-1) * 10, (j-1)*10], [(i-1) * 10, ((j-1)*10)+9], [((i-1) * 10) + 9, ((j-1)*10) + 9], [((i-1) * 10) + 9, (j-1)*10]])
-            cv2.fillPoly(img, pts=[contours], color=(int((tab[i-1][j-1].temp)*2.55), int((tab[i-1][j-1].temp)*2.55), int((tab[i-1][j-1].temp)*2.55)))
-    cv2.imwrite("dwuwymiarowa/"+str(nr_obrazu)+".png", img)
-    lista_obrazow.append("dwuwymiarowa/"+str(nr_obrazu)+".png")
+            contours = np.array([[i * 10, j * 10], [i * 10, (j * 10) + 9], [(i * 10) + 9, (j * 10) + 9], [(i * 10) + 9, j * 10]])
+            if tab[i][j].stan == 0:
+                cv2.fillPoly(img, pts=[contours], color=(0, 150, 0))
+            else:
+                cv2.fillPoly(img, pts=[contours], color=(0, 0, 150))
+    cv2.imwrite("wirus/"+str(nr_obrazu)+".png", img)
+    lista_obrazow.append("wirus/"+str(nr_obrazu)+".png")
 
 
 def krok(tab):
-    zmiana = 0
     for i in range(len(tab)):
         for j in range(len(tab)):
-            if(i > 0 and i < (len(tab)-1) and j > 0 and j < (len(tab)-1)):
-                if(tab[i][j] != tab[int(rozmiar_tablicy/2)][int(rozmiar_tablicy/2)]):
-                    wczesniej = tab[i][j].temp
-                    tab[i][j].temp = round(((0.7*tab[i-1][j-1].temp_poprzednia) + tab[i-1][j].temp_poprzednia + (0.7*tab[i-1][j+1].temp_poprzednia) + tab[i][j-1].temp_poprzednia + tab[i][j].temp_poprzednia + tab[i][j+1].temp_poprzednia + (0.7*tab[i+1][j-1].temp_poprzednia) + tab[i+1][j].temp_poprzednia + (0.7*tab[i+1][j+1].temp_poprzednia))/7.8, 2)
-                    if(wczesniej != tab[i][j].temp):
-                        zmiana = zmiana + 1
+            if i != 0:
+                x1 = i - 1
+            else:
+                x1 = len(tab) - 1
+
+            if j != 0:
+                y1 = j - 1
+            else:
+                y1 = len(tab) - 1
+
+            if i != (len(tab) - 1):
+                x2 = i + 1
+            else:
+                x2 = 0
+
+            if j != (len(tab) - 1):
+                y2 = j + 1
+            else:
+                y2 = 0
+
+            if 0 < round(((0.7*tab[x1][y1].stan_poprzednia) + tab[x1][j].stan_poprzednia + (0.7*tab[x1][y2].stan_poprzednia) + tab[i][y1].stan_poprzednia + tab[i][j].stan_poprzednia + tab[i][y2].stan_poprzednia + (0.7*tab[x2][y1].stan_poprzednia) + tab[x2][j].stan_poprzednia + (0.7*tab[x2][y2].stan_poprzednia))/7.8, 2):
+                tab[i][j].stan = 1
+
+
+
+
+
 
     for i in range(len(tab)):
         for j in range(len(tab)):
-            tab[i][j].temp_poprzednia = tab[i][j].temp
-    return zmiana
+            tab[i][j].stan_poprzednia = tab[i][j].stan
 
 
 if __name__ == '__main__':
@@ -61,17 +83,15 @@ if __name__ == '__main__':
 
     img = np.zeros(((rozmiar_tablicy) * 10, (rozmiar_tablicy) * 10, 3), dtype='uint8')
 
-    #zmiana = 1
     nr_obrazu = 0
 
-    #while(zmiana > 0):
-    while(nr_obrazu < 100):
+    while nr_obrazu < 100:
         zapisz_obraz(tab, img, nr_obrazu)
-        zmiana = krok(tab)
+        krok(tab)
         nr_obrazu = nr_obrazu + 1
 
                                                                                         # składanie gifa
-    with imageio.get_writer('dwuwymiarowa/dwuwymiarowa.gif', mode='I') as writer:
+    with imageio.get_writer('wirus/wirus.gif', mode='I') as writer:
         for filename in lista_obrazow:
             image = imageio.imread(filename)
             writer.append_data(image)

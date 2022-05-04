@@ -23,7 +23,7 @@ def tworzenie_tablicy(n, temp):
 
 def zapisz_obraz(tab, img, nr_obrazu):
     for i in range(len(tab)):
-        for j in range(len(tab)):
+        for j in range(len(tab)):           # pamiętaj o poprawieniu i-1 i j-1, bo psują się pierwsze linie ?????
             contours = np.array([[(i-1) * 10, (j-1)*10], [(i-1) * 10, ((j-1)*10)+9], [((i-1) * 10) + 9, ((j-1)*10) + 9], [((i-1) * 10) + 9, (j-1)*10]])
             cv2.fillPoly(img, pts=[contours], color=(int((tab[i-1][j-1].temp)*2.55), int((tab[i-1][j-1].temp)*2.55), int((tab[i-1][j-1].temp)*2.55)))
     cv2.imwrite("dwuwymiarowa/"+str(nr_obrazu)+".png", img)
