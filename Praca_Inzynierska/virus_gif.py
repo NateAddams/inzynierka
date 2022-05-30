@@ -4,6 +4,12 @@ import imageio
 import random
 
 lista_obrazow = []
+czas_odpornosci = 50        # czas odpormości
+prawdopodobienstwo = 5     # prawdopodobieństwo zarażenia
+czas_choroby = 5
+
+rozmiar_tablicy = 101        # rozmiar planszy
+liczba_cykli = 200            # ile kroków
 
 class Cialo:
     stan = 0
@@ -65,19 +71,20 @@ def krok(tab):
                 tab[i][j].choroba = tab[i][j].choroba - 1
                 if tab[i][j].choroba == 0:                      # wyzdrowienie
                     tab[i][j].stan = 0
-                    tab[i][j].odpornosc = 20                # czas odporności
+                    tab[i][j].odpornosc = czas_odpornosci                # czas odporności
 
             if tab[i][j].odpornosc > 0:                     # tracenie odporności
                 tab[i][j].odpornosc = tab[i][j].odpornosc - 1
 
 
+            chorzy = round(((0.7*tab[x1][y1].stan_poprzednia) + tab[x1][j].stan_poprzednia + (0.7*tab[x1][y2].stan_poprzednia) + tab[i][y1].stan_poprzednia + tab[i][j].stan_poprzednia + tab[i][y2].stan_poprzednia + (0.7*tab[x2][y1].stan_poprzednia) + tab[x2][j].stan_poprzednia + (0.7*tab[x2][y2].stan_poprzednia))/7.8, 2)
+            if (0 < chorzy) and tab[i][j].odpornosc == 0:
 
-            if (0 < round(((0.7*tab[x1][y1].stan_poprzednia) + tab[x1][j].stan_poprzednia + (0.7*tab[x1][y2].stan_poprzednia) + tab[i][y1].stan_poprzednia + tab[i][j].stan_poprzednia + tab[i][y2].stan_poprzednia + (0.7*tab[x2][y1].stan_poprzednia) + tab[x2][j].stan_poprzednia + (0.7*tab[x2][y2].stan_poprzednia))/7.8, 2)) and tab[i][j].odpornosc == 0:
+                contagion = chorzy*random.randint(1,100)       # losowanie zarażenia
 
-                contagion = random.randint(1,100)       # losowanie zarażenia
-                if contagion < 30:                      # szanse zarażenia (tu 30%)
+                if contagion < prawdopodobienstwo:                      # szanse zarażenia (tu 30%)
                     tab[i][j].stan = 1
-                    tab[i][j].choroba = 10                        # dni choroby
+                    tab[i][j].choroba = czas_choroby                        # dni choroby
 
 
 
@@ -92,7 +99,7 @@ def krok(tab):
 
 if __name__ == '__main__':
 
-    rozmiar_tablicy = 19
+    #rozmiar_tablicy = 19
 
     tab = tworzenie_tablicy(rozmiar_tablicy)
     tab[int(rozmiar_tablicy/2)][int(rozmiar_tablicy/2)].stan = 1
@@ -102,7 +109,7 @@ if __name__ == '__main__':
 
     nr_obrazu = 0
 
-    while nr_obrazu < 100:
+    while nr_obrazu < liczba_cykli:
         zapisz_obraz(tab, img, nr_obrazu)
         krok(tab)
         nr_obrazu = nr_obrazu + 1
