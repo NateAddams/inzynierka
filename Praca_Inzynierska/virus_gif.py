@@ -2,15 +2,17 @@ import cv2
 import numpy as np
 import imageio
 import random
+import matplotlib.pyplot as plt
 
 lista_obrazow = []
-czas_odpornosci = 50        # czas odpormości
-prawdopodobienstwo = 5     # prawdopodobieństwo zarażenia
+czas_odpornosci = 25        # czas odpormości
+prawdopodobienstwo = 5     # prawdopodobieństwo zarażenia (0.01)
 czas_choroby = 5
 
 rozmiar_tablicy = 101        # rozmiar planszy
-liczba_cykli = 200            # ile kroków
+liczba_cykli = 500            # ile kroków
 
+chorzy_w_kroku_list = []
 class Cialo:
     stan = 0
     stan_poprzednia = 0
@@ -36,7 +38,9 @@ def zapisz_obraz(tab, img, nr_obrazu):
     for i in range(len(tab)):
         for j in range(len(tab)):
             contours = np.array([[i * 10, j * 10], [i * 10, (j * 10) + 9], [(i * 10) + 9, (j * 10) + 9], [(i * 10) + 9, j * 10]])
-            if tab[i][j].stan == 0:
+            if tab[i][j].odpornosc > 0:
+                cv2.fillPoly(img, pts=[contours], color=(150, 0, 0))
+            elif tab[i][j].stan == 0:
                 cv2.fillPoly(img, pts=[contours], color=(0, 150, 0))
             else:
                 cv2.fillPoly(img, pts=[contours], color=(0, 0, 150))
@@ -82,24 +86,36 @@ def krok(tab):
 
                 contagion = chorzy*random.randint(1,100)       # losowanie zarażenia
 
-                if contagion < prawdopodobienstwo:                      # szanse zarażenia (tu 30%)
+                if contagion < prawdopodobienstwo:                      # szanse zarażenia
                     tab[i][j].stan = 1
                     tab[i][j].choroba = czas_choroby                        # dni choroby
-
-
-
-
-
-
 
     for i in range(len(tab)):
         for j in range(len(tab)):
             tab[i][j].stan_poprzednia = tab[i][j].stan
 
 
-if __name__ == '__main__':
+def chorzy_w_kroku(tab, chorzy_w_kroku_list):
+    chorzy = 0
+    for i in range(len(tab)):
+        for j in range(len(tab)):
+            if tab[i][j].stan != 0:
+                chorzy = chorzy + 1
+    chorzy_w_kroku_list.append(chorzy)
 
-    #rozmiar_tablicy = 19
+
+def wykres_chorych(chorzy_w_kroku_list):
+    plt.plot(chorzy_w_kroku_list)
+    plt.grid(True)
+    plt.xlabel("krok")
+    plt.ylabel("Liczba chorych")
+    plt.title("Wykres zarażonych")
+    plt.savefig("wirus/wykres_chorych.jpg", dpi=72)
+    plt.show()
+
+
+
+if __name__ == '__main__':
 
     tab = tworzenie_tablicy(rozmiar_tablicy)
     tab[int(rozmiar_tablicy/2)][int(rozmiar_tablicy/2)].stan = 1
@@ -112,8 +128,10 @@ if __name__ == '__main__':
     while nr_obrazu < liczba_cykli:
         zapisz_obraz(tab, img, nr_obrazu)
         krok(tab)
+        chorzy_w_kroku(tab, chorzy_w_kroku_list)
         nr_obrazu = nr_obrazu + 1
 
+    wykres_chorych(chorzy_w_kroku_list)
                                                                                         # składanie gifa
     with imageio.get_writer('wirus/wirus.gif', mode='I') as writer:
         for filename in lista_obrazow:
